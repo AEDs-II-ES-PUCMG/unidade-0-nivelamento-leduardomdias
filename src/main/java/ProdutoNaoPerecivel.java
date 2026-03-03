@@ -16,4 +16,13 @@ public class ProdutoNaoPerecivel  extends Produto {
     public String toString() {
         return super.toString();
     }
+
+    /**
+	* Gera uma linha de texto a partir dos dados do produto. Preço e margem de lucro vão formatados com 2 casas decimais.
+	* @return Uma string no formato "1; descrição; preçoDeCusto; margemDeLucro"
+	*/
+    @Override
+    public String gerarDadosTexto() {
+        return String.format("1; %s; %.2f; %.2f", descricao, precoCusto, margemLucro);
+    }
 }

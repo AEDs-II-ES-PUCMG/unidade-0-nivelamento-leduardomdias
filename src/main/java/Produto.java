@@ -1,9 +1,12 @@
 import java.text.NumberFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
-public class Produto {
+public abstract class Produto {
 	
 	private static final double MARGEM_PADRAO = 0.2;
-	private String descricao;
+	protected String descricao;
 	protected double precoCusto;
 	protected double margemLucro;
 	
@@ -66,5 +69,48 @@ public class Produto {
     	NumberFormat moeda = NumberFormat.getCurrencyInstance();
     	
 		return String.format("NOME: " + descricao + ": " + moeda.format(valorDeVenda()));
+	}
+
+	/**
+	* Igualdade de produtos: caso possuam o mesmo nome/descrição.
+	* @param obj Outro produto a ser comparado
+	* @return booleano true/false conforme o parâmetro possua a descrição igual ou não a este produto.
+	*/
+	@Override
+	public boolean equals(Object obj){
+	Produto outro = (Produto)obj;
+	return this.descricao.toLowerCase().equals(outro.descricao.toLowerCase());
+	}
+
+	/**
+	* Gera uma linha de texto a partir dos dados do produto
+	* @return Uma string no formato "tipo; descrição;preçoDeCusto;margemDeLucro;[dataDeValidade]"
+	*/
+	public abstract String gerarDadosTexto();
+
+	/**
+	* Cria um produto a partir de uma linha de dados em formato texto. A linha de dados deve estar de acordo com a
+	formatação
+	* "tipo; descrição;preçoDeCusto;margemDeLucro;[dataDeValidade]"
+	* ou o funcionamento não será garantido. Os tipos são 1 para produto não perecível e 2 para perecível.
+	* @param linha Linha com os dados do produto a ser criado.
+	* @return Um produto com os dados recebidos
+	*/
+	static Produto criarDoTexto(String linha){
+		Produto novoProduto = null;
+		String[] partes = linha.split(";");
+		String tipo = partes[0];
+		String desc = partes[1];
+		double precoCusto = Double.parseDouble(partes[2].replace(",", "."));
+		double margemLucro = Double.parseDouble(partes[3].replace(",", "."));
+		if (tipo.equals("1")) {
+			novoProduto = new ProdutoNaoPerecivel(desc, precoCusto, margemLucro);
+		} else if (tipo.equals("2")) {
+			DateTimeFormatter formato = DateTimeFormatter.ofPattern(" dd/MM/yyyy");
+			LocalDate data = LocalDate.parse(partes[4], formato);
+			LocalDateTime dataHora = data.atStartOfDay();
+			novoProduto = new ProdutoPerecivel(desc, precoCusto, margemLucro, dataHora);
+		}
+		return novoProduto;
 	}
 }
